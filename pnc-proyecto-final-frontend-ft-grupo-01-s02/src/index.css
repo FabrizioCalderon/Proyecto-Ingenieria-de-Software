@@ -179,7 +179,9 @@ main {
 .input-field {
   border-radius: 999px;
   border: 1px solid var(--canchitas-border);
-  padding: 0.6rem 1rem;
+  padding: 0.75rem 1rem;
+  display: block;
+  width: 100%;
   font-size: 0.95rem;
   background-color: #ffffff;
   color: var(--canchitas-text);
@@ -206,6 +208,10 @@ main {
 .input-error-text {
   font-size: 0.8rem;
   color: var(--canchitas-danger);
+}
+
+.input-with-icon {
+  padding-right: 2.5rem; /* menos espacio entre texto y icono */
 }
 
 /* =================================

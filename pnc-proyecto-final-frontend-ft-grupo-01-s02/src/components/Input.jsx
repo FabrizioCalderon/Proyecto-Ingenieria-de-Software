@@ -10,8 +10,13 @@ function Input({
   onChange,
   error = "",
   className = "",
+  suffix = null,
   ...props
 }) {
+  const inputClasses = ["input-field", error ? "input-field--error" : "", className]
+    .filter(Boolean)
+    .join(" ");
+
   return (
     <div className="input-group">
       {label && (
@@ -20,17 +25,23 @@ function Input({
         </label>
       )}
 
-      <input
-        id={id}
-        type={type}
-        className={["input-field", error ? "input-field--error" : "", className]
-          .filter(Boolean)
-          .join(" ")}
-        placeholder={placeholder}
-        value={value}
-        onChange={onChange}
-        {...props}
-      />
+      <div className="relative">
+        <input
+          id={id}
+          type={type}
+          className={suffix ? `${inputClasses} pr-10` : inputClasses}
+          placeholder={placeholder}
+          value={value}
+          onChange={onChange}
+          {...props}
+        />
+
+        {suffix && (
+          <div className="absolute right-3 top-1/2 -translate-y-1/2">
+            {suffix}
+          </div>
+        )}
+      </div>
 
       {error && <p className="input-error-text">{error}</p>}
     </div>
