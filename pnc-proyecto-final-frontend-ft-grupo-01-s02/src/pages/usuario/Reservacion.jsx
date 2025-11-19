@@ -1,349 +1,430 @@
+// src/pages/reservas/Reservacion.jsx
+
 import { useEffect, useState } from "react";
 import Dropdown from "../../components/Dropdown";
 import CalendarioReservas from "../../components/CalendarioReservas";
 import SelectorHoras from "../../components/SelectorHoras";
+import Button from "../../components/Button";
+import Input from "../../components/Input";
 
+import estadioImg from "/src/assets/estadio-de-deportes.jpg";
 
 function Reservacion() {
-    const [opciones, setOpciones] = useState([]);
-    const [seleccionado, setSeleccionado] = useState("");
-    const [selectedDate, setSelectedDate] = useState(null);
-    const [selectedHours, setSelectedHours] = useState([]);
-    const [fechasOcupadas, setFechasOcupadas] = useState([]);
-    const [horasOcupadas, setHorasOcupadas] = useState([]);
-    const [numeroTarjeta, setNumeroTarjeta] = useState("");
-    const [vencimiento, setVencimiento] = useState("");
-    const [cvv, setCvv] = useState("");
-    const [formularioValido, setFormularioValido] = useState(false);
-    const [pagoExitoso, setPagoExitoso] = useState(false);
+  const [opciones, setOpciones] = useState([]);
+  const [seleccionado, setSeleccionado] = useState("");
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [selectedHours, setSelectedHours] = useState([]);
+  const [fechasOcupadas, setFechasOcupadas] = useState([]);
+  const [horasOcupadas, setHorasOcupadas] = useState([]);
+  const [numeroTarjeta, setNumeroTarjeta] = useState("");
+  const [vencimiento, setVencimiento] = useState("");
+  const [cvv, setCvv] = useState("");
+  const [formularioValido, setFormularioValido] = useState(false);
+  const [pagoExitoso, setPagoExitoso] = useState(false);
 
-    // Simulamos llamada a API
-    useEffect(() => {
-        const datosSimulados = [
-            { label: "El Salvador, uyyy", value: "SV" },
-            { label: "Guatemala", value: "GT" },
-            { label: "Honduras", value: "HN" },
-        ];
-        setOpciones(datosSimulados);
-    }, []);
+  // Simulamos llamada a API: zonas / lugares / etc
+  useEffect(() => {
+    const datosSimulados = [
+      { label: "San Salvador", value: "SV" },
+      { label: "Santa Tecla", value: "ST" },
+      { label: "Soyapango", value: "SO" },
+    ];
+    setOpciones(datosSimulados);
+  }, []);
 
-    // Fechas ocupadas (desde API)
-    useEffect(() => {
-        const fechas = ["2025-06-15", "2025-06-17", "2025-06-20"];
-        setFechasOcupadas(fechas);
-    }, []);
+  // Fechas ocupadas (desde API)
+  useEffect(() => {
+    const fechas = ["2025-06-15", "2025-06-17", "2025-06-20"];
+    setFechasOcupadas(fechas);
+  }, []);
 
-    const canchaSeleccionada = {
-        nombre: "Cancha Futbol 5",
-        lugar: "Complejo Deportivo A",
-        zona: "San Salvador",
-        precioPorHora: 10.0,
+  const canchaSeleccionada = {
+    nombre: "Cancha Fútbol 5",
+    lugar: "Complejo Deportivo A",
+    zona: "San Salvador",
+    precioPorHora: 10.0,
+  };
+
+  const usuario = {
+    nombre: "Jennifer López",
+    correo: "jenn@example.com",
+  };
+
+  // Horarios ocupados según fecha
+  useEffect(() => {
+    if (!selectedDate) return;
+    const fechaStr = selectedDate.toISOString().split("T")[0];
+
+    const reservasPorFecha = {
+      "2025-06-16": ["10:00", "13:00"],
+      "2025-06-18": ["08:00", "12:00", "15:00"],
     };
 
-    const usuario = {
-        nombre: "Jennifer López",
-        correo: "jenn@example.com",
-    };
+    setHorasOcupadas(reservasPorFecha[fechaStr] || []);
+    setSelectedHours([]); // reiniciar selección cuando cambia fecha
+  }, [selectedDate]);
 
-    useEffect(() => {
-        const fechas = ["2025-06-15", "2025-06-17", "2025-06-20"];
-        setFechasOcupadas(fechas);
-    }, []);
-
-    useEffect(() => {
-        if (!selectedDate) return;
-        const fechaStr = selectedDate.toISOString().split("T")[0];
-
-        const reservasPorFecha = {
-            "2025-06-16": ["10:00", "13:00"],
-            "2025-06-18": ["08:00", "12:00", "15:00"],
-        };
-
-        setHorasOcupadas(reservasPorFecha[fechaStr] || []);
-        setSelectedHours([]); // reiniciar selección
-    }, [selectedDate]);
-
-    const toggleHora = (hora) => {
-        setSelectedHours((prev) =>
-            prev.includes(hora) ? prev.filter((h) => h !== hora) : [...prev, hora].sort()
-        );
-    };
-
-    const calcularTotal = () => selectedHours.length * canchaSeleccionada.precioPorHora;
-
-    const horaInicio = selectedHours[0];
-    const horaFin = selectedHours.length > 0
-        ? `${parseInt(selectedHours[selectedHours.length - 1]) + 1}:00`
-        : null;
-
-    // Validaciones 
-    const validarNumeroTarjeta = (num) => /^\d{16}$/.test(num);
-    const validarVencimiento = (v) => /^(0[1-9]|1[0-2])\/\d{2}$/.test(v);
-    const validarCVV = (c) => /^\d{3}$/.test(c);
-
-
-    useEffect(() => {
-        const esValido =
-            validarNumeroTarjeta(numeroTarjeta) &&
-            validarVencimiento(vencimiento) &&
-            validarCVV(cvv);
-
-        setFormularioValido(esValido);
-    }, [numeroTarjeta, vencimiento, cvv]);
-
-    const handlePagar = () => {
-    if (formularioValido && selectedDate && selectedHours.length > 0) {
-        setPagoExitoso(true);
-
-        // Limpiar campos
-        setNumeroTarjeta("");
-        setVencimiento("");
-        setCvv("");
-        setSelectedDate(null);
-        setSelectedHours([]);
-        setSeleccionado("");
-
-        setTimeout(() => {
-            setPagoExitoso(false);
-        }, 5000);
-    }
-};
-
-    return (
-        <div>
-            <div className="m-12">
-                <div className="w-full bg-white rounded-xl p-6 space-y-6">
-                    <h2 className="text-[#213A58] text-2xl flex justify-center font-bold">Crear reservación</h2>
-
-                    <ul>
-                        <li className="text-pretty text-black font-semibold">Pasos para reservar tu cancha</li>
-                        <li className="text-pretty text-black ">Selecciona tu zona o ciudad:
-                            Elige la ubicación donde deseas alquilar una cancha.</li>
-                        <li className="text-pretty text-black ">Escoge el lugar disponible:
-                            Verás una lista de complejos o centros deportivos registrados en esa zona.</li>
-                        <li className="text-pretty text-black ">Filtra por tipo de cancha:
-                            Puedes elegir entre canchas de futboll rapido o canchas de grama articifial.</li>
-                        <li className="text-pretty text-black "> Elige la cancha específica:
-                            Selecciona la cancha que mejor se adapte a lo que estás buscando</li>
-                        <li className="text-pretty text-black ">Selecciona la fecha y el horario:
-                            Revisa la disponibilidad y escoge el día y hora que prefieras. Solo se mostrarán los horarios habilitados. </li>
-                        <li className="text-pretty text-black "> Ingresa tu método de pago:
-                            Completa el pago con tu tarjeta de crédito o débito de forma segura desde la plataforma.</li>
-                        <li className="text-black font-medium">¡Listo! Solo te queda llegar a jugar.</li>
-                    </ul>
-
-                </div>
-            </div>
-            <div className="m-12">
-                <div className="w-full bg-[#213A58] border-2 rounded-xl p-6 space-y-6">
-                    <h2 className="text-2xl text-white flex justify-center font-bold">Canchas</h2>
-                    {/*Bloque 1 */}
-                    <div className="grid grid-cols-2">
-                        {/*Dropdowns de las selcciones */}
-                        <div className=" grid grid-rows-4 m-6">
-
-                            <Dropdown
-                                label="Selecciona zona"
-                                options={opciones}
-                                value={seleccionado}
-                                onChange={setSeleccionado}
-                            />
-                            <Dropdown
-                                label="Selecciona el lugar"
-                                options={opciones}
-                                value={seleccionado}
-                                onChange={setSeleccionado}
-                            />
-                            <Dropdown
-                                label="Selecciona el tipo de cancha"
-                                options={opciones}
-                                value={seleccionado}
-                                onChange={setSeleccionado}
-                            />
-                            <Dropdown
-                                label="Selecciona la cancha"
-                                options={opciones}
-                                value={seleccionado}
-                                onChange={setSeleccionado}
-                            />
-                        </div>
-                        {/*Para traer la imagen subida de la cancha */}
-                        <div className="m-6">
-                            <img src=".\src\assets\estadio-de-deportes.jpg" alt="" />
-                        </div>
-                    </div>
-                    {/*Bloque 2 */}
-                    {/*Calendario y horarios*/}
-                    <div className="">
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="p-5">
-                                <label className="label">
-                                    <span className="label text-white mb-2">Calendario de Reservas</span>
-                                </label>
-                                <CalendarioReservas
-                                    fechasOcupadas={fechasOcupadas}
-                                    selectedDate={selectedDate}
-                                    onDateChange={setSelectedDate}
-                                />
-                                {selectedDate && (
-                                    <p className="text-white">
-                                        Fecha seleccionada:{" "}
-                                        <span className="text-blue-300">{selectedDate.toLocaleDateString()}</span>
-                                    </p>
-                                )}
-                            </div>
-
-                            <div className="p-5">
-                                {selectedDate ? (
-                                    <>
-                                        <label className="label">
-                                            <span className="label text-white mb-2">Horarios Disponibles</span>
-                                        </label>
-                                        <SelectorHoras
-                                            horasOcupadas={horasOcupadas}
-                                            horasSeleccionadas={selectedHours}
-                                            onHoraClick={toggleHora}
-                                        
-                                        />
-                                        {selectedHours.length > 0 && (
-                                            <div className="mt-6 text-white">
-                                                <p>Hora de inicio: <strong>{horaInicio}</strong></p>
-                                                <p>Hora de fin: <strong>{horaFin}</strong></p>
-                                                <p>Total a pagar: <strong>${calcularTotal().toFixed(2)}</strong></p>
-                                            </div>
-                                        )}
-                                    </>
-                                ) : (
-                                    <p className="text-white">Selecciona una fecha para ver horarios disponibles.</p>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-                    {/*Bloque 3 */}
-                    <div className="p-5">
-                        <label className="label">
-                            <span className="label font-bold text-white mb-2">Datos personales</span>
-                        </label>
-                        <div className="grid grid-cols-2 text-white">
-                            <p>
-                                <strong>Usuario:</strong>
-                                <p>{usuario.nombre}</p>
-                            </p>
-                            <p>
-                                <strong>Correo:</strong>
-                                <p>{usuario.correo}</p>
-                            </p>
-                        </div>
-                    </div>
-                    {/*Bloque 4 */}
-                    <div className=" border-emerald-400 border p-4 rounded-lg shadow text-white">
-                        <h2 className="font-bold mb-4">Detalles de compra</h2>
-                        <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <p><strong>Lugar:</strong> {canchaSeleccionada.lugar}</p>
-                                <p><strong>Zona:</strong> {canchaSeleccionada.zona}</p>
-                                <p><strong>Cancha:</strong> {canchaSeleccionada.nombre}</p>
-                            </div>
-                            <div>
-                                <p><strong>Fecha:</strong> {selectedDate ? selectedDate.toLocaleDateString() : ""}</p>
-                                <p><strong>Entrada:</strong> {selectedHours.length > 0 ? selectedHours[0] : ""}</p>
-                                <p><strong>Salida:</strong> {
-                                    selectedHours.length > 0
-                                        ? `${parseInt(selectedHours[selectedHours.length - 1]) + 1}:00`
-                                        : ""
-                                }</p>
-                            </div>
-                            <div>
-                                <p><strong>Precio Total:</strong> {
-                                    selectedHours.length > 0
-                                        ? `$${(selectedHours.length * canchaSeleccionada.precioPorHora).toFixed(2)}`
-                                        : ""
-                                }</p>
-                            </div>
-                        </div>
-                    </div>
-                    {/*Bloque 5 */}
-                    <div className="mt-8 p-4 rounded-lg  text-white">
-                        <h2 className="font-bold mb-4">Forma de Pago</h2>
-                        <Dropdown
-                            label=""
-                            options={opciones}
-                            value={seleccionado}
-                            onChange={setSeleccionado}
-                        />
-                        <div className="grid grid-cols-3 gap-4">
-                            <div>
-                                <label className="label">
-                                    <span className="label-text text-white">Número de tarjeta</span>
-                                </label>
-                                <input
-                                    type="text"
-                                    className="input input-bordered bg-transparent border-white w-full"
-                                    placeholder="XXXX XXXX XXXX XXXX"
-                                    maxLength={16}
-                                    value={numeroTarjeta}
-                                    onChange={(e) => setNumeroTarjeta(e.target.value.replace(/\D/g, ""))}
-                                />
-                            </div>
-                            <div>
-                                <label className="label">
-                                    <span className="label-text text-white">Vencimiento</span>
-                                </label>
-                                <input
-                                    type="text"
-                                    className="input input-bordered bg-transparent border-white w-full"
-                                    placeholder="MM/AA"
-                                    maxLength={5}
-                                    value={vencimiento}
-                                    onChange={(e) => setVencimiento(e.target.value)}
-                                />
-                            </div>
-                            <div>
-                                <label className="label">
-                                    <span className="label-text text-white">CVV</span>
-                                </label>
-                                <input
-                                    type="password"
-                                    className="input input-bordered bg-transparent border-white w-full"
-                                    maxLength={3}
-                                    value={cvv}
-                                    onChange={(e) => setCvv(e.target.value.replace(/\D/g, ""))}
-                                />
-                            </div>
-                        </div>
-                    </div>
-                    {/*Bloque 6 */}
-                    <div className="mt-6">
-                        <button
-                            className="btn btn-success mt-4 w-full"
-                            disabled={!formularioValido || !(selectedDate && selectedHours.length > 0)}
-                            onClick={handlePagar}
-                        >
-                            Confirmar y pagar
-                            <span className="ml-2">
-                                {selectedHours.length > 0
-                                    ? `$${(selectedHours.length * canchaSeleccionada.precioPorHora).toFixed(2)}`
-                                    : ""}
-                            </span>
-                        </button>
-
-                        {pagoExitoso && (
-                            <div role="alert" className="alert alert-success mt-4 shadow-lg">
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 shrink-0 stroke-current" fill="none" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                                <span>¡Pago realizado con éxito! Tu reservación ha sido confirmada.</span>
-                            </div>
-
-                        )}
-                    </div>
-
-
-                </div>
-            </div>
-
-        </div>
+  const toggleHora = (hora) => {
+    setSelectedHours((prev) =>
+      prev.includes(hora)
+        ? prev.filter((h) => h !== hora)
+        : [...prev, hora].sort()
     );
+  };
+
+  const calcularTotal = () =>
+    selectedHours.length * canchaSeleccionada.precioPorHora;
+
+  const horaInicio = selectedHours[0] || null;
+  const horaFin =
+    selectedHours.length > 0
+      ? `${parseInt(selectedHours[selectedHours.length - 1]) + 1}:00`
+      : null;
+
+  // Validaciones de tarjeta
+  const validarNumeroTarjeta = (num) => /^\d{16}$/.test(num);
+  const validarVencimiento = (v) => /^(0[1-9]|1[0-2])\/\d{2}$/.test(v);
+  const validarCVV = (c) => /^\d{3}$/.test(c);
+
+  useEffect(() => {
+    const esValido =
+      validarNumeroTarjeta(numeroTarjeta) &&
+      validarVencimiento(vencimiento) &&
+      validarCVV(cvv);
+
+    setFormularioValido(esValido);
+  }, [numeroTarjeta, vencimiento, cvv]);
+
+  const handlePagar = () => {
+    if (formularioValido && selectedDate && selectedHours.length > 0) {
+      setPagoExitoso(true);
+
+      // Limpiar campos
+      setNumeroTarjeta("");
+      setVencimiento("");
+      setCvv("");
+      setSelectedDate(null);
+      setSelectedHours([]);
+      setSeleccionado("");
+
+      setTimeout(() => {
+        setPagoExitoso(false);
+      }, 5000);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-[var(--canchitas-bg)] px-4 py-10 md:px-8 lg:px-16">
+      <div className="max-w-6xl mx-auto space-y-8">
+        {/* Intro / pasos */}
+        <section className="canchitas-section space-y-4">
+          <h1 className="text-2xl md:text-3xl font-bold text-center text-[var(--canchitas-primary)]">
+            Crear reservación
+          </h1>
+          <p className="text-sm text-[var(--canchitas-text-muted)] text-center">
+            Sigue estos pasos para reservar tu cancha de forma rápida y segura.
+          </p>
+
+          <ul className="mt-2 space-y-1 text-sm text-[var(--canchitas-text)]">
+            <li className="font-semibold">
+              Pasos para reservar tu cancha:
+            </li>
+            <li>
+              <span className="font-medium">1.</span> Selecciona tu zona o
+              ciudad y el lugar donde deseas alquilar una cancha.
+            </li>
+            <li>
+              <span className="font-medium">2.</span> Elige el tipo de cancha y
+              la cancha específica que mejor se adapte a tu equipo.
+            </li>
+            <li>
+              <span className="font-medium">3.</span> Selecciona la fecha y el
+              horario disponible que prefieras.
+            </li>
+            <li>
+              <span className="font-medium">4.</span> Ingresa tu método de pago
+              y confirma la reservación.
+            </li>
+            <li className="font-semibold">
+              ¡Listo! Solo te queda llegar a jugar.
+            </li>
+          </ul>
+        </section>
+
+        {/* Layout principal: izquierda (cancha+calendario) / derecha (datos+pago) */}
+        <section className="grid lg:grid-cols-[2fr,1.5fr] gap-6 items-start">
+          {/* Columna izquierda */}
+          <div className="space-y-6">
+            {/* Selección de cancha */}
+            <div className="canchitas-section space-y-4">
+              <h2 className="text-lg font-semibold text-[var(--canchitas-primary)]">
+                1. Elige tu cancha
+              </h2>
+
+              <div className="grid md:grid-cols-2 gap-4 items-start">
+                <div className="space-y-3">
+                  <Dropdown
+                    label="Selecciona zona"
+                    options={opciones}
+                    value={seleccionado}
+                    onChange={setSeleccionado}
+                  />
+                  <Dropdown
+                    label="Selecciona el lugar"
+                    options={opciones}
+                    value={seleccionado}
+                    onChange={setSeleccionado}
+                  />
+                  <Dropdown
+                    label="Selecciona el tipo de cancha"
+                    options={opciones}
+                    value={seleccionado}
+                    onChange={setSeleccionado}
+                  />
+                  <Dropdown
+                    label="Selecciona la cancha"
+                    options={opciones}
+                    value={seleccionado}
+                    onChange={setSeleccionado}
+                  />
+                </div>
+
+                <div className="rounded-2xl overflow-hidden shadow-md">
+                  <img
+                    src={estadioImg}
+                    alt="Cancha seleccionada"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Calendario y horarios */}
+            <div className="canchitas-section space-y-4">
+              <h2 className="text-lg font-semibold text-[var(--canchitas-primary)]">
+                2. Elige fecha y horario
+              </h2>
+
+              <div className="grid md:grid-cols-2 gap-4">
+                {/* Calendario */}
+                <div>
+                  <p className="text-sm font-medium text-[var(--canchitas-primary)] mb-2">
+                    Calendario de reservas
+                  </p>
+                  <CalendarioReservas
+                    fechasOcupadas={fechasOcupadas}
+                    selectedDate={selectedDate}
+                    onDateChange={setSelectedDate}
+                  />
+                  {selectedDate && (
+                    <p className="mt-2 text-xs text-[var(--canchitas-text-muted)]">
+                      Fecha seleccionada:{" "}
+                      <span className="font-semibold">
+                        {selectedDate.toLocaleDateString()}
+                      </span>
+                    </p>
+                  )}
+                </div>
+
+                {/* Horarios */}
+                <div>
+                  <p className="text-sm font-medium text-[var(--canchitas-primary)] mb-2">
+                    Horarios disponibles
+                  </p>
+
+                  {selectedDate ? (
+                    <>
+                      <SelectorHoras
+                        horasOcupadas={horasOcupadas}
+                        horasSeleccionadas={selectedHours}
+                        onHoraClick={toggleHora}
+                      />
+
+                      {selectedHours.length > 0 && (
+                        <div className="mt-4 space-y-1 text-sm text-[var(--canchitas-text)]">
+                          <p>
+                            Hora de inicio:{" "}
+                            <strong>{horaInicio}</strong>
+                          </p>
+                          <p>
+                            Hora de fin: <strong>{horaFin}</strong>
+                          </p>
+                          <p>
+                            Total a pagar:{" "}
+                            <strong>
+                              ${calcularTotal().toFixed(2)}
+                            </strong>
+                          </p>
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <p className="text-sm text-[var(--canchitas-text-muted)]">
+                      Selecciona una fecha para ver los horarios disponibles.
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Columna derecha */}
+          <div className="space-y-6">
+            {/* Datos personales */}
+            <div className="canchitas-section space-y-3">
+              <h2 className="text-lg font-semibold text-[var(--canchitas-primary)]">
+                3. Datos personales
+              </h2>
+              <div className="grid sm:grid-cols-2 gap-2 text-sm text-[var(--canchitas-text)]">
+                <div>
+                  <p className="font-medium">Usuario</p>
+                  <p>{usuario.nombre}</p>
+                </div>
+                <div>
+                  <p className="font-medium">Correo</p>
+                  <p>{usuario.correo}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Detalles de compra */}
+            <div className="canchitas-section space-y-3">
+              <h2 className="text-lg font-semibold text-[var(--canchitas-primary)]">
+                4. Detalles de la reserva
+              </h2>
+              <div className="grid sm:grid-cols-2 gap-3 text-sm text-[var(--canchitas-text)]">
+                <div>
+                  <p>
+                    <strong>Lugar:</strong> {canchaSeleccionada.lugar}
+                  </p>
+                  <p>
+                    <strong>Zona:</strong> {canchaSeleccionada.zona}
+                  </p>
+                  <p>
+                    <strong>Cancha:</strong> {canchaSeleccionada.nombre}
+                  </p>
+                </div>
+                <div>
+                  <p>
+                    <strong>Fecha:</strong>{" "}
+                    {selectedDate
+                      ? selectedDate.toLocaleDateString()
+                      : "-"}
+                  </p>
+                  <p>
+                    <strong>Entrada:</strong>{" "}
+                    {selectedHours.length > 0 ? horaInicio : "-"}
+                  </p>
+                  <p>
+                    <strong>Salida:</strong>{" "}
+                    {selectedHours.length > 0 ? horaFin : "-"}
+                  </p>
+                </div>
+                <div className="sm:col-span-2">
+                  <p>
+                    <strong>Precio total:</strong>{" "}
+                    {selectedHours.length > 0
+                      ? `$${calcularTotal().toFixed(2)}`
+                      : "-"}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Forma de pago */}
+            <div className="canchitas-section space-y-4">
+              <h2 className="text-lg font-semibold text-[var(--canchitas-primary)]">
+                5. Forma de pago
+              </h2>
+
+              <Dropdown
+                label="Método de pago"
+                options={opciones}
+                value={seleccionado}
+                onChange={setSeleccionado}
+              />
+
+              <div className="grid sm:grid-cols-3 gap-3">
+                <Input
+                  id="numeroTarjeta"
+                  label="Número de tarjeta"
+                  placeholder="XXXX XXXX XXXX XXXX"
+                  value={numeroTarjeta}
+                  maxLength={16}
+                  onChange={(e) =>
+                    setNumeroTarjeta(e.target.value.replace(/\D/g, ""))
+                  }
+                />
+                <Input
+                  id="vencimiento"
+                  label="Vencimiento"
+                  placeholder="MM/AA"
+                  value={vencimiento}
+                  maxLength={5}
+                  onChange={(e) => setVencimiento(e.target.value)}
+                />
+                <Input
+                  id="cvv"
+                  label="CVV"
+                  type="password"
+                  value={cvv}
+                  maxLength={3}
+                  onChange={(e) =>
+                    setCvv(e.target.value.replace(/\D/g, ""))
+                  }
+                />
+              </div>
+
+              <div className="space-y-3">
+                <Button
+                  variant="primary"
+                  fullWidth
+                  disabled={
+                    !formularioValido ||
+                    !selectedDate ||
+                    selectedHours.length === 0
+                  }
+                  onClick={handlePagar}
+                >
+                  Confirmar y pagar{" "}
+                  {selectedHours.length > 0 &&
+                    `- $${calcularTotal().toFixed(2)}`}
+                </Button>
+
+                <p className="text-xs text-center text-[var(--canchitas-text-muted)]">
+                  Tu pago se procesa de forma segura. No almacenamos los datos
+                  de tu tarjeta.
+                </p>
+
+                {pagoExitoso && (
+                  <div className="mt-3 rounded-xl bg-emerald-50 border border-emerald-300 px-4 py-3 text-sm text-emerald-900 flex items-start gap-2">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5 mt-0.5"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth={1.5}
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
+                    </svg>
+                    <span>
+                      ¡Pago realizado con éxito! Tu reservación ha sido
+                      confirmada.
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  );
 }
 
 export default Reservacion;
