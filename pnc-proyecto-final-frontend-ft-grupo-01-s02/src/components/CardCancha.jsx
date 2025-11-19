@@ -13,6 +13,7 @@ function CardCancha({
   imagen,
   onReservar,
   mostrarBoton = true,
+  mostrarEstado = true, // 👈 NUEVA PROP (por defecto true)
 }) {
   return (
     <article className="card-cancha">
@@ -36,13 +37,19 @@ function CardCancha({
         </header>
 
         <footer className="card-cancha__footer">
-          <BadgeEstado estado={estado} />
+          {/* Badge de estado (puede ocultarse) */}
+          {mostrarEstado && (
+            <BadgeEstado estado={estado} />
+          )}
+
+          {/* Precio por hora */}
           {precioHora != null && (
             <span className="card-cancha__price">
               ${Number(precioHora).toFixed(2)} / hora
             </span>
           )}
 
+          {/* Botón de reservar (puede ocultarse) */}
           {mostrarBoton && (
             <Button
               size="sm"
