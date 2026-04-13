@@ -39,7 +39,7 @@ function MisReservaciones() {
         setCargando(true);
         setError(null);
 
-        const res = await api.get(`/api/reservas/${usuario.idUsuario}`);
+        const res = await api.get(`/api/reservas/usuario/${usuario.idUsuario}`);
         const data = res.data;
         setReservas(Array.isArray(data) ? data : []);
       } catch (err) {

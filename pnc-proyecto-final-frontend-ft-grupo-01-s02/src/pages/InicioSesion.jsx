@@ -56,7 +56,7 @@ function InicioSesion() {
       localStorage.setItem("token", data.token);
       localStorage.setItem("role", data.role);
 
-      login(data.token, data.role);
+      login(data.token, data.role, data.usuario);
       console.log("Login exitoso:", data.token, data.role);
 
       navigate("/", { replace: true });
